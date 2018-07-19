@@ -11,14 +11,14 @@ menu:
 # site title 
 # 页面的标题
 # title为空时 Hexo/_config.yml 配置有效
-title: lx'home
+title: 嘎嘣脆鸡肉味
 
 # author profile
 # source/imgaes/
 # 作者信息
 # author为空时 Hexo/_config.yml 配置有效
 profile: 
-  author: lx
+  author: 嘎嘣脆鸡肉味
   avatar: /images/header.jpeg
   description: a nodejs developer
 
