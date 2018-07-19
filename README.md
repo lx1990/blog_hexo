@@ -1,1 +1,1 @@
-# a blog base hexo
+# a blog based on hexo
