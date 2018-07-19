@@ -10,6 +10,14 @@
 
 		<div class='article-meta'>
 			<%= date(post.date,  "MMM DD, YYYY") %>
+
+            <%if(post.categories && post.categories.length){%>
+			<span class="iconfont icon-star"></span>
+            <% post.categories.sort('date',-1).each(function (category){%>
+			<a class="article-tag" href="<%- url_for(category.path) %>"><%- category.name %></a>
+            <% })%>
+            <%}%>
+
 			<%if(post.tags && post.tags.length){%>
 				<span class="iconfont icon-star"></span>
 				<% post.tags.sort('date',-1).each(function (tag){%>            

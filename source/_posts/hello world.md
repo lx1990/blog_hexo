@@ -1,5 +1,9 @@
 ---
 title: hello world
-tags: ['test','md']
+
+tags: 
+- test
+categories: 
+- test
 ---
 自古一楼hello world

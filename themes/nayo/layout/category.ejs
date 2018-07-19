@@ -8,6 +8,19 @@
 
         <%- partial('_partial/item',{post:post}) %>       
 
-  	 <% }) %> 	
-  <%}%>	    
+  	 <% }) %>
+    <%} else {%>
+
+	<span class="page-title"><%=  __('Page.Categories') %></span>
+
+    <% site.categories.sort('date',-1).each( function (category){%>
+
+	<a class="tag-wrap slideDownMin" href="<%- url_for(category.path) %>">
+		<span class="iconfont icon-category"></span>
+		<span class="tag-name"> <%- category.name %> </span>
+		<span class="tag-count"><%- category.length %></span>
+	</a>
+    <% })%>
+  <%}%>
+
 </section>

@@ -85,10 +85,10 @@ share_item:
 # 捐赠功能
 # source/imgaes/
 donate:
-  enable: false
-  word: 世界美好 你也是
-  wechat: /images/donate1.png
-  alipay: /images/donate2.png
+  enable: true
+  word: 宠辱不惊,去留无意
+  wechat: /images/wechat.png
+  alipay: /images/ali.jpeg
 
 # mathjax 
 # 渲染LateX公式
