@@ -3,38 +3,39 @@
 menu:
   home: /
   archives: archives
+  categories: categories
   tags: tags
-  about: about
+  #about: about
   search: search
 
 # site title 
 # 页面的标题
 # title为空时 Hexo/_config.yml 配置有效
-title: hexo-theme-nayo
+title: lx'home
 
 # author profile
 # source/imgaes/
 # 作者信息
 # author为空时 Hexo/_config.yml 配置有效
 profile: 
-  author: Lemon
-  avatar: /images/header.jpg  
-  description: hi,i am lemon
+  author: lx
+  avatar: /images/header.jpeg
+  description: a nodejs developer
 
 # site favicon
 # source/imgaes/
 # 站点图标
-favicon: /images/favicon.png
+#favicon: /images/favicon.png
 
 # social link
 social:  
-  Github: https://github.com/Lemonreds/hexo-theme-nayo 
-  Weibo:
+  Github: https://github.com/lx1990
+  #Weibo:
 # Zhihu:
-  Facebook:
-  Twitter:
-  Instagram:
-  LinkedIn:
+  #Facebook:
+  #Twitter:
+  #Instagram:
+  #LinkedIn:
 
 
 # toc
@@ -45,15 +46,16 @@ toc:
 # site analytics 
 # 站点访问统计
 # [ analytics id ]
-baidu_analytics:
- 636802045446222199ae541e32c8133e 
-google_analytics: 
-
+#baidu_analytics:
+ #636802045446222199ae541e32c8133e
+# Google Analytic ID
+google_analytics:
+ UA-122593838-1
 # comment
 
 # disqus(https://disqus.com/)
 disqus:
-  comment: true
+  comment: false
   shortname: lemonreds
 
 # valine(https://github.com/xCss/Valine)
@@ -83,7 +85,7 @@ share_item:
 # 捐赠功能
 # source/imgaes/
 donate:
-  enable: true
+  enable: false
   word: 世界美好 你也是
   wechat: /images/donate1.png
   alipay: /images/donate2.png
@@ -105,8 +107,8 @@ mathjax:
 # footer
 # 底部信息
 footer:
-  author: Lemon
-  since: 2017
+  author: lx
+  since: 2018
 
 
 # theme version

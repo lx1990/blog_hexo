@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
+title: lx'home
 subtitle:
 description:
 keywords:
-author: John Doe
+author: lx
 language:
 timezone:
 
@@ -81,3 +81,10 @@ deploy:
   type: git
   repository: https://github.com/lx1990/lx1990.github.io.git
   branch: master
+
+search:
+  path: search.xml
+  field: post
+
+
+
