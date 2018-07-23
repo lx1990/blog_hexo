@@ -61,9 +61,9 @@ disqus:
 # valine(https://github.com/xCss/Valine)
 # 创建 leancloud 应用 获取 id|key 填入即可
 leancloud:  
-  comment: false
-  app_id: cFM0eCo0CQ9xmBXmHi1eltol-gzGzoHsz
-  app_key: oh9tizsnvV2vNvWgqEvoNtQO
+  comment: true
+  app_id: fGt6y7vR6skqVtVozlNBPwCW-gzGzoHsz
+  app_key: aCWPzbHk3MeLpv3CDrK5Yhag
 
 # mob share(http://www.mob.com)
 # 文章分享功能
