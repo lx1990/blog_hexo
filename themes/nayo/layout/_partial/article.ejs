@@ -9,7 +9,7 @@
 		 <%	var date_format = config.date_format %>
 
 		<div class='article-meta'>
-			<%= date(post.date,  "MMM DD, YYYY") %>
+			<%= date(post.date,  "YYYY-MM-DD HH:mm") %>
 
             <%if(post.categories && post.categories.length){%>
 			<span class="iconfont icon-star"></span>
