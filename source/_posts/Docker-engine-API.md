@@ -6,7 +6,6 @@ tags:
 categories:
 - 部署
 ---
-# Docker engine API
 [Docker engine API官方文档](https://docs.docker.com/engine/api/v1.35/)
 ### 背景介绍
 &emsp;&emsp;每次版本升级，都需要手动打镜像，推送仓库，拉取镜像，启动docker。。。需要敲很多的命令，比较繁琐。于是，就开始研究docker engine api，以便之后能够使用接口来替代手敲命令，同时也可升级为可视化的界面，方便部署。
@@ -72,3 +71,5 @@ X-Registry-Auth的值为：
 **若未标明转载，本博客内容均为原创。**
 
 **版权归作者所有，转载请注明出处。**
+
+**若有帮助(批评指正)，还请留言，您的建议是我不断前进的动力**
