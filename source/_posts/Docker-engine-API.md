@@ -1,12 +1,17 @@
 ---
 title: Docker engine API
-date: 2018-07-26 18:51:30
+date: 2018-07-26 23:47:30
 tags:
+- docker
+categories:
+- 部署
 ---
 # Docker engine API
 [Docker engine API官方文档](https://docs.docker.com/engine/api/v1.35/)
+### 背景介绍
+&emsp;&emsp;每次版本升级，都需要手动打镜像，推送仓库，拉取镜像，启动docker。。。需要敲很多的命令，比较繁琐。于是，就开始研究docker engine api，以便之后能够使用接口来替代手敲命令，同时也可升级为可视化的界面，方便部署。
 ### docker版本
-
+<!-- more -->
 ~~~
 Client:
  Version:       17.12.0-ce
@@ -29,27 +34,23 @@ Server:
 
 ### 相关配置
 - 打开docker的配置
-
 > vim /usr/lib/systemd/system/docker.service
 
 - 连接镜像仓库&&配置docker源地址
-
-> 
-添加如下参数：
-ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock --insecure-registry 192.168.0.15:80 --insecure-registry 218.94.141.74:5001 --registry-mirror http://hub-
-mirror.c.163.com --registry-mirror https://registry.docker-cn.com --registry-mirror https://docker.mirrors.ustc.edu.cn
+>
+    添加如下参数：
+    ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix://var/run/docker.sock --insecure-registry 192.168.0.15:80 --insecure-registry xxx.xxx.xxx.xxx --registry-mirror http://hub-mirror.c.163.com --registry-mirror https://registry.docker-cn.com --registry-mirror https://docker.mirrors.ustc.edu.cn
 
 - 重启docker
-
 >
-systemctl daemon-reload 
-service docker restart  
+    systemctl daemon-reload
+    service docker restart
 
 ### 使用api
 
 - 你的访问域名就是添加了参数的主机地址
-  
-- 接口使用postman已调通，作为附件上传
+
+- 接口使用postman已调通，
 
 - 需要注意一点：认证问题
 
