@@ -13,13 +13,14 @@ categories:
 &emsp;&emsp;基于我们现在自己服务的体量，发现使用`confd+nginx+etcd+docker`能够满足我们实现无感知升级的需求，且比较轻量。遂，组长让我研究一下`confd`。`nginx`、`ectd`和`docker`这里不做过多的介绍，只关注confd。
 
 ### 无感知原理
+<!-- more -->
 &emsp;&emsp;假设我们有一个服务起了两个`docker`镜像，那么我们把这两个镜像的地址都放在`etcd`中，并启动在`confd`进行监测。
 &emsp;&emsp;当我们需要对服务进行升级时，我们可以先在`etcd`中删除一个`docker`的地址，这样`confd`会检测到配置有变动，重新生成新的`nginx`配置文件并且重启`nginx`。
 &emsp;&emsp;因为`nginx`的重启时间相当短暂，几乎在瞬间完成，所以此时`nginx`指向不到已经删除掉的`docker`地址，我们可以升级完服务，启动新的`docker`，再将新的`docker`服务的地址放回`etcd`中，剩下的老的`docker`服务也以此类推，从而做到无感知升级。
 
 ### 运行环境
 > centos7
-<!-- more -->
+
 ### 安装confd
 
 - 下载+安装
