@@ -10,7 +10,7 @@ date: 2018-07-26 15:46:00
 前文说到此博客是基于hexo框架+github搭建起来的，下面来进行详细说明搭建过程。
 ### 在github注册博客地址
 >  github上新建一个仓库，命名为XXXX.github.io，xxxx为你的用户名
-
+<!-- more -->
 ### 搭建hexo
 - **安装[Nodejs](https://nodejs.org/en/)**
 - **安装[Git](https://git-scm.com/)**
