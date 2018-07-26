@@ -169,3 +169,9 @@ cd /opt/confd/bin
 ./confd -interval=$1 -backend etcd -node $2 &
 nginx -g 'daemon off;'
 ~~~
+
+----------------**华丽的分割线**----------------
+
+**若未标明转载，本博客内容均为原创。**
+
+**版权归作者所有，转载请注明出处。**
