@@ -10,7 +10,7 @@ categories:
 ---
 [confd官网](http://www.confd.io/)
 ### 背景介绍
-&emsp;&emsp;基于我们现在自己服务的体量，发现使用`confd+nginx+etcd+docker`能够满足我们实现无感知升级的需求，且比较轻量。遂，组长让我研究一下`confd`。`nginx`、`ectd`和`docker`这里不做过多的介绍，只关注confd。
+&emsp;&emsp;基于我们现在自己服务的体量，发现使用`confd+nginx+etcd+docker`能够满足我们实现无感知升级的需求，且比较轻量。遂，组长让我研究一下`confd`。`nginx`、`ectd`和`docker`这里不做过多的介绍，只关注`confd`。
 
 ### 无感知原理
 <!-- more -->
