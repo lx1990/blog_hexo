@@ -49,25 +49,121 @@ Server:
 
 - 你的访问域名就是添加了参数的主机地址
 
-- 接口使用postman已调通，
-
 - 需要注意一点：认证问题
 
-> /auth接口，认证的时候不会返回"IdentityToken"
+> /auth接口，认证的时候"IdentityToken"返回值为空(我尝试过，但是没有成功返回token)
 
-> 在create image的时候(从仓库拉取镜像到本地)，在header中加入X-Registry-Auth参数
+> 在create image的时候(从仓库拉取镜像到本地)，在header中加入X-Registry-Auth参数,下面会详细说明
 
+
+
+### 具体接口说明
+#### Authentication
+> method：POST
+> /auth
+
+请求参数：
 ~~~
-X-Registry-Auth的值为：
+    {
+        "username": "hannibal",
+        "password": "xxxx",
+        "serveraddress": "https://index.docker.io/v1/"
+    }
+~~~
+
+#### Images
+- List images（列出本地所有镜像）
+> method：GET
+> /images/json?all=true
+
+- Create an image（从镜像仓库拉取镜像）
+> method：POST
+> /images/create?fromImage=镜像名字
+
+&emsp;&emsp;Header：
+~~~
+X-Registry-Auth:下方json对象整体的base64转码
+    {
+        "username": "hannibal",
+        "password": "xxxx",
+        "serveraddress": "https://index.docker.io/v1/"
+    }
+~~~
+
+- Remove an image（删除镜像）
+> method：DELETE
+> /images/{Image name or ID}
+
+- Tag an image（给镜像打tag）
+> method：POST
+> /images/{Image name or ID}/tag
+
+- Push an image（推送镜像至仓库）
+> method：POST
+> /images/{Image name or ID}/push
+
+#### Containers
+- List containers（列出所有容器）
+> method：GET
+> /containers/json?all=true
+
+- Create a container（创建容器）
+> method：POST
+> /containers/create?name=给容器起的名字
+
+请求参数：
+~~~
 {
-  "username": "admin",
-  "password": "Admin123",
-  "serveraddress": "192.168.0.15:80"
+    "Env":[
+        "CLOUD_PORT=4000",
+        "CLOUD_APP_NAME=cloud"
+    ],
+    # 启动命令必须按照这样的格式写，不然会报错
+    "Cmd": ["pm2", "start" ,"app.js" ,"-i", "2"],
+    "Image": "镜像名称",
+    "Tag": "latest",
+    # Volumes+HostConfig中的Binds等同于：-v
+    "Volumes": {
+        "/usr/src/app/config/local.js": {},
+        "/usr/src/logs": {},
+        "/etc/localtime": {}
+    },
+    "HostConfig": {
+        "Binds": [
+            "/home/cloud_new/local.js:/usr/src/app/config/local.js",
+            "/home/cloud_new/logs/:/usr/src/logs",
+            "/etc/localtime:/etc/localtime:ro"
+        ],
+        # 等同于：–restart=unless-stopped
+        "RestartPolicy":{
+            "Name": "unless-stopped"
+        },
+        # 等同于：–net=host
+        "NetworkMode":"host"
+    }
 }
-上方json对象的base64转码
 ~~~
 
-未完待续
+- Remove a container（删除容器）
+> method：DELETE
+> /containers/{ID or name of the container}
+
+- Start a container（启动容器）
+> method：POST
+> /containers/{ID or name of the container}/start
+
+- Stop a container（停止容器）
+> method：POST
+> /containers/{ID or name of the container}/stop
+
+- Restart a container（重启容器）
+> method：POST
+> /containers/{ID or name of the container}/restart
+
+- Kill a container（停止容器）
+> method：POST
+> /containers/{ID or name of the container}/kill
+
 ----------------**华丽的分割线**----------------
 
 **若未标明转载，本博客内容均为原创。**
