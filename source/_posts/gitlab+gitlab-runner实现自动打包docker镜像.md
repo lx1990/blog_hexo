@@ -189,7 +189,7 @@ check_interval = 0
       tags:
         - cloud
 ~~~
-&emsp;&emsp;至此，我们就可以实现打了tag自动生成生成docker镜像，结合之前的docker engine api的调用来方便地部署镜像
+&emsp;&emsp;至此，我们就可以实现打了tag自动生成docker镜像并推送到镜像仓库，结合之前的docker engine api的调用来方便地部署镜像
 
 ----------------**华丽的分割线**----------------
 
