@@ -1,0 +1,388 @@
+<!DOCTYPE html PUBLIC "-//WAPFORUM//DTD XHTML Mobile 1.0//EN" "http://www.wapforum.org/DTD/xhtml-mobile10.dtd">
+<html>
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  
+  
+  <title>  Confd+nginx+etcd实现无感知升级 |   嘎嘣脆鸡肉味 </title>
+
+ 
+  
+
+
+  <link rel="stylesheet" href="/nayo.min.css"> 
+</head>  
+  <body>   
+    
+      <header class="header">
+	
+  <nav class="header-nav">        
+   
+    <span class="iconfont icon-menu mobile-toggle"></span>   	
+
+    <div class="header-menu">          
+              
+            
+
+              <a class="header-menu-link" id="header-menu-home" href="/">首页</a>     
+
+            
+            
+            
+
+              <a class="header-menu-link" id="header-menu-archives" href="/archives">归档</a>     
+
+            
+            
+            
+
+              <a class="header-menu-link" id="header-menu-categories" href="/categories">分类</a>     
+
+            
+            
+            
+
+              <a class="header-menu-link" id="header-menu-tags" href="/tags">标签</a>     
+
+            
+            
+            
+
+              <a class="iconfont icon-menu-search header-menu-link" id="header-menu-search"></a>
+
+            
+                
+    </div>  
+    
+  </nav>
+</header>   
+
+      <div class="container">       
+          
+          
+            <section class="main">  
+          
+
+          <article class="post">
+  
+	<div class="post-header">
+
+	<p class="post-title">	
+		confd+nginx+etcd实现无感知升级
+	</p>
+			
+
+	<div class="meta-info">	
+	<span>
+		2018-07-26 17:48
+	</span>
+
+	
+	
+		<i class="iconfont icon-words"></i>
+		<span>
+			3652
+		</span>
+	
+</div>
+
+</div> 
+	 
+
+	  <div class="post-content slideDownMin">
+
+		
+
+			
+					<p><a href="http://www.confd.io/" target="_blank" rel="noopener">confd官网</a></p>
+<h3 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h3><p>&emsp;&emsp;基于我们现在自己服务的体量，发现使用<code>confd+nginx+etcd+docker</code>能够满足我们实现无感知升级的需求，且比较轻量。遂，组长让我研究一下<code>confd</code>。<code>nginx</code>、<code>ectd</code>和<code>docker</code>这里不做过多的介绍，只关注<code>confd</code>。</p>
+<h3 id="无感知原理"><a href="#无感知原理" class="headerlink" title="无感知原理"></a>无感知原理</h3><a id="more"></a>
+<p>&emsp;&emsp;假设我们有一个服务起了两个<code>docker</code>镜像，那么我们把这两个镜像的地址都放在<code>etcd</code>中，并启动在<code>confd</code>进行监测。<br>&emsp;&emsp;当我们需要对服务进行升级时，我们可以先在<code>etcd</code>中删除一个<code>docker</code>的地址，这样<code>confd</code>会检测到配置有变动，重新生成新的<code>nginx</code>配置文件并且重启<code>nginx</code>。<br>&emsp;&emsp;因为<code>nginx</code>的重启时间相当短暂，几乎在瞬间完成，所以此时<code>nginx</code>指向不到已经删除掉的<code>docker</code>地址，我们可以升级完服务，启动新的<code>docker</code>，再将新的<code>docker</code>服务的地址放回<code>etcd</code>中，剩下的老的<code>docker</code>服务也以此类推，从而做到无感知升级。</p>
+<h3 id="运行环境"><a href="#运行环境" class="headerlink" title="运行环境"></a>运行环境</h3><blockquote>
+<p>centos7</p>
+</blockquote>
+<h3 id="安装confd"><a href="#安装confd" class="headerlink" title="安装confd"></a>安装confd</h3><ul>
+<li>下载+安装<blockquote>
+</blockquote>
+  wget <a href="https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64" target="_blank" rel="noopener">https://github.com/kelseyhightower/confd/releases/download/v0.16.0/confd-0.16.0-linux-amd64</a><br>  mkdir -p /opt/confd/bin<br>  mv confd-0.16.0-linux-amd64 /opt/confd/bin/confd<br>  chmod +x /opt/confd/bin/confd<br>  export PATH=”$PATH:/opt/confd/bin”</li>
+</ul>
+<p>&emsp;&emsp;使用前需要创建相应的配置目录</p>
+<h3 id="配置confd"><a href="#配置confd" class="headerlink" title="配置confd"></a>配置confd</h3><ul>
+<li><p>创建配置目录</p>
+<blockquote>
+<p>mkdir -p /etc/confd/{conf.d,templates}</p>
+</blockquote>
+</li>
+<li><p>在<code>/etc/confd/conf.d</code>下创建配置文件：</p>
+<blockquote>
+<p>vim /etc/confd/conf.d/cloud.toml</p>
+</blockquote>
+</li>
+</ul>
+<p>&emsp;&emsp;这个里面是confd生成的nginx配置文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"># etcd中keys的前缀</span><br><span class="line">prefix = &quot;/cloud&quot;</span><br><span class="line"># src指/etc/confd/templates中的模板文件的名字</span><br><span class="line">src = &quot;cloud.conf.tmpl&quot;</span><br><span class="line"># dest指nginx配置文件生成目录</span><br><span class="line">dest = &quot;/etc/nginx/conf.d/cloud.conf&quot;</span><br><span class="line"># keys指的是etcd中的keys</span><br><span class="line">keys = [</span><br><span class="line">    &quot;/subdomain&quot;,</span><br><span class="line">    &quot;/upstream&quot;</span><br><span class="line">]</span><br><span class="line">reload_cmd = &quot;nginx -s reload&quot;</span><br><span class="line">#reload_cmd = &quot;service nginx reload&quot;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>在<code>/etc/confd/templates</code>下创建模板文件：<blockquote>
+<p>vim /etc/confd/templates/cloud.conf.tmpl</p>
+</blockquote>
+</li>
+</ul>
+<p>&emsp;&emsp;这个里面是nginx的upstream的模板，被<code>/etc/confd/conf.d/cloud.toml</code>读取</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># upstream指从etcd某个键中读取出来的数据</span><br><span class="line">upstream &#123;&#123;getv &quot;/subdomain&quot;&#125;&#125; &#123;</span><br><span class="line">    &#123;&#123;range getvs &quot;/upstream/*&quot;&#125;&#125;</span><br><span class="line">        server &#123;&#123;.&#125;&#125;;</span><br><span class="line">    &#123;&#123;end&#125;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">    server &#123;</span><br><span class="line">        listen      443 ;</span><br><span class="line">        server_name  jswym.com;</span><br><span class="line">        location / &#123;</span><br><span class="line">            proxy_pass        http://&#123;&#123;getv &quot;/subdomain&quot;&#125;&#125;;</span><br><span class="line">            proxy_redirect    off;</span><br><span class="line">            proxy_set_header  Host             $host;</span><br><span class="line">            proxy_set_header  X-Real-IP        $remote_addr;</span><br><span class="line">            proxy_set_header  X-Forwarded-For  $proxy_add_x_forwarded_for;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>修改nginx中的配置<blockquote>
+<p> vim /etc/nginx/nginx.conf </p>
+</blockquote>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    include       mime.types;</span><br><span class="line">    default_type  application/octet-stream;</span><br><span class="line"></span><br><span class="line">    log_format  main  &apos;$remote_addr - $remote_user [$time_local] &quot;$request&quot; &apos;</span><br><span class="line">                    &apos;$status $body_bytes_sent &quot;$http_referer&quot; &quot;$http_host&quot; &apos;</span><br><span class="line">                    &apos;&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;&apos;</span><br><span class="line">                    &apos;&quot;$upstream_addr&quot; &quot;$upstream_cache_status&quot; &quot;$upstream_status&quot; &quot;$upstream_response_time&quot;&apos;</span><br><span class="line">                    &apos;&quot;$Cookie_CookKey&quot;&apos;;</span><br><span class="line"></span><br><span class="line">    access_log  /var/log/nginx/nginx_access.log  main;</span><br><span class="line"></span><br><span class="line">    sendfile        on;</span><br><span class="line">    #tcp_nopush     on;</span><br><span class="line"></span><br><span class="line">    #keepalive_timeout  0;</span><br><span class="line">    keepalive_timeout  65;</span><br><span class="line"></span><br><span class="line">    #gzip  on;</span><br><span class="line"></span><br><span class="line">    include /etc/nginx/conf.d/*.conf;   </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">重点是include这一行</span><br></pre></td></tr></table></figure>
+<h3 id="执行生成配置文件"><a href="#执行生成配置文件" class="headerlink" title="执行生成配置文件"></a>执行生成配置文件</h3><blockquote>
+</blockquote>
+<pre><code>confd -onetime -backend etcd -node http://127.0.0.1:2379    只一次
+confd -interval=60 -backend etcd -node http://127.0.0.1:2379 &amp;   按时间轮询
+</code></pre><p>&emsp;&emsp;上述俩http地址为etcd的地址，自行替换即可</p>
+<h3 id="操作"><a href="#操作" class="headerlink" title="操作"></a>操作</h3><blockquote>
+<p>etcdctl set /cloud/upstream/192.168.0.98_1337 192.168.0.98:1337</p>
+</blockquote>
+<p>&emsp;&emsp;接下来，当你在对etcd进行操作的时候，如上，confd会进行轮询，发现有所改动，自动生成nginx的配置文件，并重启nginx</p>
+<h2 id="docker化confd"><a href="#docker化confd" class="headerlink" title="docker化confd"></a>docker化confd</h2><ul>
+<li><p>docker启动命令</p>
+<blockquote>
+</blockquote>
+<p>  docker run –name confd –restart=always -v /etc/confd/conf.d/:/etc/confd/conf.d/ -v /etc/confd/templates/:/etc/confd/templates/ -v /etc/nginx/conf.d/:/etc/nginx/conf.d/ –net=host -d confd  sh -c “/opt/confd/bin/run.sh  ‘10’ ‘<a href="http://192.168.0.71:2379&#39;" target="_blank" rel="noopener">http://192.168.0.71:2379&#39;</a> “<br>  10 表示多少秒轮询一次；后面的地址是etcd的地址</p>
+</li>
+<li><p>Dockerfile</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">FROM nginx:latest</span><br><span class="line">MAINTAINER lx1990</span><br><span class="line">WORKDIR /opt/confd/bin</span><br><span class="line">COPY ./confd /opt/confd/bin/confd</span><br><span class="line">COPY ./run.sh /opt/confd/bin/run.sh</span><br><span class="line">RUN chmod +x /opt/confd/bin/run.sh</span><br><span class="line">RUN mkdir -p /etc/confd/conf.d</span><br><span class="line">RUN mkdir -p /etc/confd/templates</span><br><span class="line">RUN mkdir -p /etc/nginx/conf.d</span><br></pre></td></tr></table></figure>
+<ul>
+<li>run.sh</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">cd /opt/confd/bin</span><br><span class="line">./confd -interval=$1 -backend etcd -node $2 &amp;</span><br><span class="line">nginx -g &apos;daemon off;&apos;</span><br></pre></td></tr></table></figure>
+<p>—————-<strong>华丽的分割线</strong>—————-</p>
+<p><strong>若未标明转载，本博客内容均为原创。</strong></p>
+<p><strong>版权归作者所有，转载请注明出处。</strong></p>
+<p><strong>若有帮助(批评指正)，还请留言，您的建议是我不断前进的动力</strong></p>
+  	
+					
+	  </div>     
+	  
+
+	
+<div class="post-meta">
+      
+        <i class="iconfont icon-category"></i>       
+        <a class="category-link" href="/categories/运维/">运维</a> 	
+     
+      	
+
+      
+        <i class="iconfont icon-tag"></i>     
+          <a class="tag-link" href="/tags/confd/">confd</a> <a class="tag-link" href="/tags/etcd/">etcd</a> <a class="tag-link" href="/tags/nginx/">nginx</a>    
+      	
+</div>
+
+
+
+
+
+<div class="post-footer">
+  <div class="pf-left">
+      <img class="pf-avatar" src="/images/header.jpeg">
+      <p class="pf-des">a nodejs developer</p>
+  </div>
+
+  <div class="pf-right">           
+      <div class="pf-links">
+        
+
+
+
+
+<span class="donate-btn">
+	<span class="iconfont icon-donate"></span>
+</span>
+
+
+<div id="donate-box" class="sildeUpMin">
+
+	<span class="donate-cancel iconfont icon-cancel"></span>
+
+	<div class="donate-img-box">
+		<img id="donate-qr-wechat" class="noLazyLoad donate-img" src="/images/wechat.png" alt="No Donate Image!">	
+		<img id="donate-qr-alipay" class="noLazyLoad donate-img" src="/images/ali.jpeg" alt="No Donate Image!">	
+	</div>
+
+	<span class="donate-word">宠辱不惊,去留无意</span>
+
+	<div class="donate-list">
+		<span class="iconfont icon-donate-wechat"></span>
+		<span class="iconfont icon-donate-alipay"></span>
+	</div>
+
+</div>
+
+ 
+        
+	
+<script id="-mob-share" src="http://f1.webshare.mob.com/code/mob-share.js?appkey=21d601593a1de"></script>
+	
+	<span class="share-btn">
+	<span class="iconfont icon-share"></span>
+	</span>
+
+
+	<div class="-mob-share sildeUpMin">
+		   			             
+            <a class="iconfont  icon-share-qq -mob-share-qq"></a>		
+     	   			             
+            <a class="iconfont  icon-share-weixin -mob-share-weixin"></a>		
+     	   			             
+            <a class="iconfont  icon-share-weibo -mob-share-weibo"></a>		
+     	   			             
+            <a class="iconfont  icon-share-douban -mob-share-douban"></a>		
+     	   			             
+            <a class="iconfont  icon-share-facebook -mob-share-facebook"></a>		
+     	   			             
+            <a class="iconfont  icon-share-twitter -mob-share-twitter"></a>		
+     	   			             
+            <a class="iconfont  icon-share-google -mob-share-google"></a>		
+     	   
+	</div>	
+
+      </div>  
+    <nav class="pf-paginator">
+      
+         
+          <a href="/2018/07/26/Docker engine API/" data-hover="Docker engine API">上一篇</a>      
+            
+        
+      
+        
+        <a href="/2018/07/26/hexo+github搭建博客/" data-hover="hexo+github搭建博客"> 下一篇</a>
+            
+  </nav>   
+  </div>
+</div> 
+	
+
+
+    <div id="comment">   
+    </div>
+
+    <script src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+
+    <script src="//unpkg.com/valine@v1.1.8-beta/dist/Valine.min.js"></script>
+
+    <script>
+        new Valine({
+        el: '#comment',
+        notify:false, 
+        verify:false, 
+        app_id: 'fGt6y7vR6skqVtVozlNBPwCW-gzGzoHsz',
+        app_key: 'aCWPzbHk3MeLpv3CDrK5Yhag',  
+        path:window.location.pathname, 
+        avatar:'mm' ,
+        guest_info:['nick','mail']
+        });
+    </script>
+	
+</article>
+
+          </section> 
+      </div>            
+    
+    <a id="backTop">
+      <span>
+        <i class="iconfont icon-backtotop"></i>
+      </span>
+    </a> 
+
+  
+    
+    <div class="search-container sildeUpMin">
+        <div class="search-header">
+            <input type="text" placeholder="输入你想搜索的" id="search-input" class="search-input">  
+            <span class="search-cancel iconfont icon-cancel"></span>
+        </div>
+        <div id="search-result" class="search-result"></div>
+    </div>
+ 
+     <div class="mobile-menu">      
+
+      
+
+         
+            
+
+            <a class="mobile-menu-link" href="/">首页
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/archives">归档
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/categories">分类
+            </a>
+            
+         
+            
+
+            <a class="mobile-menu-link" href="/tags">标签
+            </a>
+            
+         
+                          
+
+            <a class="mobile-menu-link mobile-menu-search" href="#">搜索 </a>                 
+            
+         
+      
+</div>        
+    
+
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-122593838-1"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config',"UA-122593838-1");
+</script>
+
+     
+    
+
+
+
+
+<footer id="footer">	    
+
+		
+		<div class="footer-copyright">
+		&copy;
+		
+		2018		
+	
+		lx
+		<br>
+
+		Theme By
+		<a href="https://github.com/Lemonreds/hexo-theme-Nayo" target="_blank">Nayo</a>	
+		</div>			
+	 
+</footer>   
+
+  
+
+    <script src="/nayo.bundle.js"></script>           
+  </body>        
+</html>
