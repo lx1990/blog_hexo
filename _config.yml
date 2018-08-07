@@ -78,8 +78,11 @@ theme: nayo
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type: git
+- type: git
   repository: https://github.com/lx1990/lx1990.github.io.git
+  branch: master
+- type: git
+  repository: ssh://root@67.216.201.241:26092/root/app/blog.git
   branch: master
 
 search:
