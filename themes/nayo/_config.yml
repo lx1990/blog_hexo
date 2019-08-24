@@ -62,8 +62,8 @@ disqus:
 # 创建 leancloud 应用 获取 id|key 填入即可
 leancloud:  
   comment: true
-  app_id: fGt6y7vR6skqVtVozlNBPwCW-gzGzoHsz
-  app_key: aCWPzbHk3MeLpv3CDrK5Yhag
+  app_id: 25tSzCapiyY4GclB95iPuL6o-MdYXbMMI
+  app_key: 7xnF7kdCHL30eN4Yq0QkMgtL
 
 # mob share(http://www.mob.com)
 # 文章分享功能
